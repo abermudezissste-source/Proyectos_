@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Matrículas</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .form-container {
+            background: white;
+            border-radius: 10px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-family: inherit;
+            font-size: 1em;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 5px rgba(102, 126, 234, 0.5);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.3s ease;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        .students-list {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .students-list h2 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .student-item {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .student-item strong {
+            color: #667eea;
+        }
+
+        a.back-btn {
+            display: inline-block;
+            color: white;
+            text-decoration: none;
+            margin-bottom: 20px;
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 5px;
+            transition: background 0.3s ease;
+        }
+
+        a.back-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../index.html" class="back-btn">← Volver al Portafolio</a>
+        
+        <header>
+            <h1>📝 Sistema de Matrículas</h1>
+            <p>Gestión de registro de estudiantes</p>
+        </header>
+
+        <div class="form-container">
+            <h2 style="color: #667eea; margin-bottom: 30px;">Registrar Nuevo Estudiante</h2>
+            <form id="enrollmentForm">
+                <div class="form-group">
+                    <label for="name">Nombre Completo *</label>
+                    <input type="text" id="name" name="name" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Correo Electrónico *</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="phone">Teléfono *</label>
+                    <input type="tel" id="phone" name="phone" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="course">Seleccionar Curso *</label>
+                    <select id="course" name="course" required>
+                        <option value="">-- Selecciona un curso --</option>
+                        <option value="desarrollo-web">Desarrollo Web</option>
+                        <option value="programacion-python">Programación en Python</option>
+                        <option value="diseño-ui">Diseño UI/UX</option>
+                        <option value="base-datos">Gestión de Base de Datos</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="date">Fecha de Inicio *</label>
+                    <input type="date" id="date" name="date" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="notes">Notas Adicionales</label>
+                    <textarea id="notes" name="notes"></textarea>
+                </div>
+
+                <button type="submit">Registrar Estudiante</button>
+            </form>
+        </div>
+
+        <div class="students-list">
+            <h2>📋 Estudiantes Registrados</h2>
+            <div id="studentsList">
+                <p style="color: #999;">No hay estudiantes registrados aún.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('enrollmentForm');
+        const studentsList = document.getElementById('studentsList');
+        let students = JSON.parse(localStorage.getItem('students')) || [];
+
+        function displayStudents() {
+            if (students.length === 0) {
+                studentsList.innerHTML = '<p style="color: #999;">No hay estudiantes registrados aún.</p>';
+                return;
+            }
+
+            studentsList.innerHTML = students.map((student, index) => `
+                <div class="student-item">
+                    <strong>${student.name}</strong> - ${student.course}<br>
+                    Email: ${student.email} | Teléfono: ${student.phone}<br>
+                    <small style="color: #999;">Fecha de inicio: ${student.date}</small>
+                </div>
+            `).join('');
+        }
+
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const newStudent = {
+                name: document.getElementById('name').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+                course: document.getElementById('course').value,
+                date: document.getElementById('date').value,
+                notes: document.getElementById('notes').value
+            };
+
+            students.push(newStudent);
+            localStorage.setItem('students', JSON.stringify(students));
+            form.reset();
+            displayStudents();
+            alert('Estudiante registrado exitosamente!');
+        });
+
+        displayStudents();
+    </script>
+</body>
+</html>
