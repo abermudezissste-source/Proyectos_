@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<title>Reporte de Cumplimiento de Registro Peso para la Talla en BIES.mx</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+ body{background:#f7f8fa} .chart-card{background:#fff;border:1px solid #e6e8eb;border-radius:10px;padding:16px}
+ .sticky-filtros{position:sticky;top:0;z-index:1020;background:#f7f8fa;padding:.5rem 0}
+ .tiny{font-size:.85rem;color:#6c757d} canvas{max-height:460px}
+ .map-box{background:#fff;border:1px dashed #cbd5e1;border-radius:8px;padding:12px}
+</style>
+</head>
+<body class="container-fluid py-3">
+<h3>Reporte de Cumplimiento de Registro Peso para la Talla en BIES.mx</h3>
+<div class="tiny">Precarga automática del archivo <code>base.xlsx</code> (Revisar permisos de red). Revisar el mapeo en <code>localStorage</code>.</div>
+
+<section class="sticky-filtros">
+  <div class="row g-2 align-items-end">
+    <div class="col-12 col-md-4 d-flex gap-2">
+      <div class="flex-grow-1">
+        <label class="form-label mb-1">Seleccionar archivo (.xlsx)</label>
+        <input type="file" id="fileInput" class="form-control" accept=".xlsx,.xls" />
+      </div>
+      <div class="align-self-end">
+        <button id="btnCargarBase" class="btn btn-outline-primary">Cargar base.xlsx</button>
+      </div>
+    </div>
+
+    <div class="col-12 col-md-3">
+      <label class="form-label mb-1">Oficina de Representación</label>
+      <select id="filtroRepresentacion" class="form-select"><option value="__ALL__">Todas</option></select>
+    </div>
+    <div class="col-12 col-md-2">
+      <label class="form-label mb-1">Modalidad</label>
+      <select id="filtroModalidad" class="form-select"><option value="__ALL__">Todas</option></select>
+    </div>
+    <div class="col-12 col-md-2">
+      <label class="form-label mb-1">EBDI</label>
+      <select id="filtroEBDI" class="form-select"><option value="__ALL__">Todas</option></select>
+    </div>
+  </div>
+
+  <div class="row g-2 align-items-end mt-2">
+    <div class="col-12">
+      <div class="map-box">
+        <div class="row g-2">
+          <div class="col-12 col-md-2">
+            <label class="form-label mb-1">Región</label>
+            <select id="mapCentro" class="form-select"></select>
+          </div>
+          <div class="col-12 col-md-3">
+            <label class="form-label mb-1">Oficina de Representación</label>
+            <select id="mapRep" class="form-select"></select>
+          </div>
+          <div class="col-12 col-md-2">
+            <label class="form-label mb-1">Modalidad</label>
+            <select id="mapMod" class="form-select"></select>
+          </div>
+          <div class="col-12 col-md-2">
+            <label class="form-label mb-1">EBDI</label>
+            <select id="mapEBDI" class="form-select"></select>
+          </div>
+          <div class="col-12 col-md-2">
+            <label class="form-label mb-1">Columna de <b>Medidos</b></label>
+            <select id="mapMed" class="form-select"></select>
+          </div>
+          <div class="col-12 col-md-2">
+            <label class="form-label mb-1">Columna de <b>Pendientes</b></label>
+            <select id="mapPen" class="form-select"></select>
+          </div>
+          <div class="col-12 col-md-2 align-self-end d-flex gap-2">
+            <button id="btnAplicarMapeo" class="btn btn-primary w-100">Aplicar mapeo</button>
+            <button id="btnGuardarMapeo" class="btn btn-outline-secondary w-100" title="Guardar mapeo como predeterminado">Guardar</button>
+          </div>
+        </div>
+        <div class="tiny mt-1" id="debugHeaders"></div>
+      </div>
+    </div>
+  </div>
+  <hr class="mt-2">
+</section>
+
+<section class="mb-3">
+  <div class="row g-3">
+    <div class="col-6 col-md-3"><div class="card"><div class="card-body"><div class="tiny">Total Niñas y niños Medidos</div><div class="fs-4 fw-bold" id="kpiMedidos">—</div></div></div></div>
+    <div class="col-6 col-md-3"><div class="card"><div class="card-body"><div class="tiny">Total Niñas y Niños Pendientes</div><div class="fs-4 fw-bold" id="kpiPendientes">—</div></div></div></div>
+    <div class="col-6 col-md-3"><div class="card"><div class="card-body"><div class="tiny">% Cumplimiento Global</div><div class="fs-4 fw-bold" id="kpiCumplimiento">—</div></div></div></div>
+    <div class="col-6 col-md-3"><div class="card"><div class="card-body"><div class="tiny">Sedes</div><div class="fs-4 fw-bold" id="kpiRegistros">—</div></div></div></div>
+  </div>
+</section>
+
+<section class="row g-3">
+  <div class="col-12 col-lg-4"><div class="chart-card"><h6 class="mb-2">Cumplimiento global</h6><canvas id="grafGlobal"></canvas></div></div>
+  <div class="col-12 col-lg-8"><div class="chart-card"><h6 class="mb-2">Cumplimiento % por Región</h6><canvas id="grafPctCentro"></canvas></div></div>
+  <div class="col-12"><div class="chart-card"><h6 class="mb-2">Medidos vs Pendientes por Región</h6><canvas id="grafMPporCentro"></canvas></div></div>
+</section>
+
+<script>
+(() => {
+  const COLOR_MEDIDOS = "#2e7d32", COLOR_PEND = "#c62828", COLOR_PCT = "#65F527";
+  let DATA_RAW = []; let charts={global:null,pctCentro:null,mpCentro:null};
+  const el=(id)=>document.getElementById(id); const destroyIf=(c)=>{if(c)c.destroy();};
+  const toNumber=(v)=>{if(v==null) return 0; if(typeof v==='number') return isFinite(v)?v:0; const s=String(v).replace(/[^0-9.-]/g,''); const n=Number(s); return isNaN(n)?0:n;};
+
+  const DEFAULT_MAPPING = JSON.parse(localStorage.getItem('mapeo_pred') || '{}');
+  // Fallback (si no hay guardado) a nombres típicos
+  const FALLBACK_MAPPING = {
+    centroId: 'CentroId',
+    representacion: 'Oficina de Representación',
+    modalidad: 'Modalidad',
+    ebdi: 'EBDI',
+    medidos: 'Medidos',
+    pendientes: 'Pendientes'
+  };
+
+  function fillSelect(sel, options, prefer){
+    sel.innerHTML = options.map(o=>`<option value="${o}">${o}</option>`).join('');
+    if (prefer && options.includes(prefer)) sel.value = prefer;
+  }
+
+  async function leerArrayBufferDeArchivo(file){
+    return new Promise((res,rej)=>{ const fr = new FileReader(); fr.onload = ()=>res(fr.result); fr.onerror = rej; fr.readAsArrayBuffer(file); });
+  }
+
+  function procesarArrayBuffer(buf){
+    const wb=XLSX.read(buf,{type:'array'}); const ws=wb.Sheets[wb.SheetNames[0]]; const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:''}); if(!rows.length){alert('Archivo vacío'); return;}
+    const headers = rows[0].map(h=>String(h));
+    // Poblar selects del mapeo y preseleccionar según DEFAULT_MAPPING o fallbacks
+    fillSelect(el('mapCentro'), headers, DEFAULT_MAPPING.centroId || FALLBACK_MAPPING.centroId);
+    fillSelect(el('mapRep'), headers, DEFAULT_MAPPING.representacion || FALLBACK_MAPPING.representacion);
+    fillSelect(el('mapMod'), headers, DEFAULT_MAPPING.modalidad || FALLBACK_MAPPING.modalidad);
+    fillSelect(el('mapEBDI'), headers, DEFAULT_MAPPING.ebdi || FALLBACK_MAPPING.ebdi);
+    fillSelect(el('mapMed'), headers, DEFAULT_MAPPING.medidos || FALLBACK_MAPPING.medidos);
+    fillSelect(el('mapPen'), headers, DEFAULT_MAPPING.pendientes || FALLBACK_MAPPING.pendientes);
+
+    // Aplicación automática del mapeo al cargar si todos existen
+    const haveAll = [
+      el('mapCentro').value, el('mapRep').value, el('mapMod').value,
+      el('mapEBDI').value, el('mapMed').value, el('mapPen').value
+    ].every(v=> headers.includes(v));
+
+    window.__rows__ = rows; // para reutilizar
+    if (haveAll) aplicarMapeo();
+  }
+
+  async function cargarBase(){
+    // Intenta cargar base.xlsx del mismo directorio
+    try{
+      const resp = await fetch('base.xlsx');
+      if(!resp.ok) throw new Error('No se pudo leer base.xlsx');
+      const buf = await resp.arrayBuffer();
+      procesarArrayBuffer(buf);
+    }catch(err){
+      alert('No se pudo cargar base.xlsx automáticamente. Asegúrate de abrir el HTML desde un servidor local o coloca el archivo junto al HTML.');
+      console.error(err);
+    }
+  }
+
+  // Eventos de UI
+  el('fileInput').addEventListener('change', async (ev)=>{
+    const f=ev.target.files?.[0]; if(!f) return; const buf = await leerArrayBufferDeArchivo(f); procesarArrayBuffer(buf);
+  });
+  el('btnCargarBase').addEventListener('click', cargarBase);
+
+  el('btnGuardarMapeo').addEventListener('click', ()=>{
+    const pred = {
+      centroId: el('mapCentro').value,
+      representacion: el('mapRep').value,
+      modalidad: el('mapMod').value,
+      ebdi: el('mapEBDI').value,
+      medidos: el('mapMed').value,
+      pendientes: el('mapPen').value,
+    };
+    localStorage.setItem('mapeo_pred', JSON.stringify(pred));
+    alert('Mapeo guardado como predeterminado.');
+  });
+
+  el('btnAplicarMapeo').addEventListener('click', aplicarMapeo);
+
+  function aplicarMapeo(){
+    const rows = window.__rows__ || []; if(!rows.length){ alert('Primero carga el archivo.'); return; }
+    const H = rows[0]; const idx = (name)=> H.findIndex(h=> h===name);
+    const iCentro=idx(el('mapCentro').value), iRep=idx(el('mapRep').value), iMod=idx(el('mapMod').value), iE=idx(el('mapEBDI').value), iMed=idx(el('mapMed').value), iPen=idx(el('mapPen').value);
+    if([iCentro,iRep,iMod,iE,iMed,iPen].some(i=> i<0)){ alert('Verifica el mapeo: hay campos sin seleccionar.'); return; }
+
+    DATA_RAW = rows.slice(1).map(r=>({
+      centroId: r[iCentro],
+      representacion: r[iRep],
+      modalidad: r[iMod],
+      ebdi: r[iE],
+      medidos: toNumber(r[iMed]),
+      pendientes: toNumber(r[iPen])
+    }));
+
+    poblarFiltros(DATA_RAW);
+    actualizarTodo();
+  }
+
+  function poblarFiltros(rows){
+    const uniques=(key)=>[...new Set(rows.map(r=>r[key]).filter(Boolean))].sort((a,b)=>String(a).localeCompare(String(b),'es',{sensitivity:'base'}));
+    const upd=(id,vals)=>{ const sel=el(id); const cur=sel.value; sel.innerHTML='<option value="__ALL__">Todas</option>'+vals.map(v=>`<option value="${encodeURIComponent(v)}">${v}</option>`).join(''); if([...sel.options].some(o=>o.value===cur)) sel.value=cur; };
+    upd('filtroRepresentacion', uniques('representacion'));
+    upd('filtroModalidad', uniques('modalidad'));
+    upd('filtroEBDI', uniques('ebdi'));
+  }
+
+  function filtrados(){
+    const rep=decodeURIComponent(el('filtroRepresentacion').value||'__ALL__');
+    const mod=decodeURIComponent(el('filtroModalidad').value||'__ALL__');
+    const eb=decodeURIComponent(el('filtroEBDI').value||'__ALL__');
+    return DATA_RAW.filter(r=> (rep==='__ALL__'||r.representacion===rep) && (mod==='__ALL__'||r.modalidad===mod) && (eb==='__ALL__'||r.ebdi===eb));
+  }
+
+  function actualizarTodo(){
+    const rows = filtrados();
+    const totMed = rows.reduce((s,r)=>s+toNumber(r.medidos),0);
+    const totPen = rows.reduce((s,r)=>s+toNumber(r.pendientes),0);
+    const pct = (totMed+totPen)>0? totMed/(totMed+totPen)*100:0;
+    el('kpiMedidos').textContent = totMed.toLocaleString('es-MX');
+    el('kpiPendientes').textContent = totPen.toLocaleString('es-MX');
+    el('kpiCumplimiento').textContent = pct.toFixed(1)+' %';
+    el('kpiRegistros').textContent = rows.length.toLocaleString('es-MX');
+
+    destroyIf(charts.global);
+    charts.global = new Chart(el('grafGlobal'),{type:'doughnut',data:{labels:['Medidos','Pendientes'],datasets:[{data:[totMed,totPen],backgroundColor:[COLOR_MEDIDOS,COLOR_PEND]}]},options:{plugins:{legend:{position:'bottom'}}}});
+
+    const agrup = agruparPorCentro(rows).sort((a,b)=>(b.medidos+b.pendientes)-(a.medidos+a.pendientes));
+    const usados = agrup.slice(0,30);
+    const labels = usados.map(x=>x.centroId);
+    const pctCentro = usados.map(x=>{const t=x.medidos+x.pendientes; return t>0? x.medidos/t*100:0;});
+
+    destroyIf(charts.pctCentro);
+    charts.pctCentro = new Chart(el('grafPctCentro'),{type:'bar',data:{labels,datasets:[{label:'% Cumplimiento',data:pctCentro,backgroundColor:'#1565c0'}]},options:{scales:{y:{beginAtZero:true,suggestedMax:100,ticks:{callback:v=>v+'%'}}},plugins:{legend:{display:false}}}});
+
+    destroyIf(charts.mpCentro);
+    charts.mpCentro = new Chart(el('grafMPporCentro'),{type:'bar',data:{labels,datasets:[{label:'Medidos',data:usados.map(x=>x.medidos),backgroundColor:COLOR_MEDIDOS,stack:'s1'},{label:'Pendientes',data:usados.map(x=>x.pendientes),backgroundColor:COLOR_PEND,stack:'s1'}]},options:{scales:{x:{stacked:true},y:{stacked:true,beginAtZero:true}}}});
+  }
+
+  function agruparPorCentro(rows){
+    const m=new Map();
+    rows.forEach(r=>{const k=String(r.centroId||'').trim(); if(!k) return; if(!m.has(k)) m.set(k,{centroId:k,medidos:0,pendientes:0}); const a=m.get(k); a.medidos+=toNumber(r.medidos); a.pendientes+=toNumber(r.pendientes);});
+    return [...m.values()];
+  }
+
+  // Intento de precarga inmediata de base.xlsx
+  // Nota: puede requerir abrir el HTML desde http:// (p. ej., con "npx serve" o Live Server).
+  document.addEventListener('DOMContentLoaded', ()=>{
+    cargarBase().catch(()=>{});
+  });
+})();
+</script>
+</body>
+</html>
