@@ -3,47 +3,322 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portfolio</title>
-    <link rel="stylesheet" href="styles.css">
-    <script src="scripts.js" defer></script>
+    <title>Mis Proyectos Web</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 60px;
+            animation: fadeIn 0.8s ease-in;
+        }
+
+        header h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 60px;
+        }
+
+        .project-card {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            animation: slideUp 0.6s ease-out;
+        }
+
+        .project-card:nth-child(2) {
+            animation-delay: 0.1s;
+        }
+
+        .project-card:nth-child(3) {
+            animation-delay: 0.2s;
+        }
+
+        .project-card:nth-child(4) {
+            animation-delay: 0.3s;
+        }
+
+        .project-card:nth-child(5) {
+            animation-delay: 0.4s;
+        }
+
+        .project-card:nth-child(6) {
+            animation-delay: 0.5s;
+        }
+
+        .project-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        }
+
+        .project-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            color: white;
+        }
+
+        .project-header h2 {
+            font-size: 1.5em;
+            margin-bottom: 5px;
+        }
+
+        .project-header .tag {
+            display: inline-block;
+            background: rgba(255,255,255,0.3);
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.85em;
+        }
+
+        .project-content {
+            padding: 25px;
+        }
+
+        .project-content p {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .project-footer {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-size: 0.9em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            flex: 1;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            opacity: 0.9;
+            transform: scale(1.05);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .status-active {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-coming {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        footer {
+            text-align: center;
+            color: white;
+            padding: 20px;
+            border-top: 1px solid rgba(255,255,255,0.2);
+        }
+
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 2em;
+            }
+
+            .projects-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 <body>
-    <header>
-        <h1>Mi Portafolio</h1>
-        <nav>
-            <ul>
-                <li><a href="#precarga">Precarga</a></li>
-                <li><a href="#mapa">Mapa</a></li>
-                <li><a href="#avance">Avance</a></li>
-                <li><a href="#matriculas">Matrículas</a></li>
-                <li><a href="#coming-soon">Próximamente</a></li>
-            </ul>
-        </nav>
-    </header>
-    <main>
-        <section id="precarga">
-            <h2>Precarga</h2>
-            <p>Descripción del proyecto Precarga...</p>
-        </section>
-        <section id="mapa">
-            <h2>Mapa</h2>
-            <p>Descripción del proyecto Mapa...</p>
-        </section>
-        <section id="avance">
-            <h2>Avance</h2>
-            <p>Descripción del proyecto Avance...</p>
-        </section>
-        <section id="matriculas">
-            <h2>Matrículas</h2>
-            <p>Descripción del proyecto Matrículas...</p>
-        </section>
-        <section id="coming-soon">
-            <h2>Próximamente</h2>
-            <p>Dos proyectos próximamente...</p>
-        </section>
-    </main>
-    <footer>
-        <p>&copy; 2026 Mi Portafolio</p>
-    </footer>
+    <div class="container">
+        <header>
+            <h1>🚀 Mis Proyectos Web</h1>
+            <p>Bienvenido a mi portafolio de proyectos web</p>
+        </header>
+
+        <div class="projects-grid">
+            <!-- Proyecto 1: Precarga -->
+            <div class="project-card">
+                <div class="project-header">
+                    <h2>📄 Precarga</h2>
+                    <span class="tag">HTML5 • CSS3</span>
+                </div>
+                <div class="project-content">
+                    <span class="status-badge status-active">✓ Activo</span>
+                    <p>Página de precarga con animaciones interactivas y diseño moderno.</p>
+                    <div class="project-footer">
+                        <a href="index_precarga.html" class="btn btn-primary">Ver Proyecto</a>
+                        <a href="https://github.com/abermudezissste-source/Proyectos_" class="btn btn-secondary">GitHub</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Proyecto 2: Mapa -->
+            <div class="project-card">
+                <div class="project-header">
+                    <h2>🗺️ Mapa</h2>
+                    <span class="tag">JavaScript • API</span>
+                </div>
+                <div class="project-content">
+                    <span class="status-badge status-active">✓ Activo</span>
+                    <p>Aplicación interactiva de mapas con funcionalidades de geolocalización y búsqueda.</p>
+                    <div class="project-footer">
+                        <a href="mapa/index.html" class="btn btn-primary">Ver Proyecto</a>
+                        <a href="https://github.com/abermudezissste-source/Proyectos_" class="btn btn-secondary">GitHub</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Proyecto 3: Avance -->
+            <div class="project-card">
+                <div class="project-header">
+                    <h2>📊 Avance</h2>
+                    <span class="tag">HTML5 • CSS3 • JS</span>
+                </div>
+                <div class="project-content">
+                    <span class="status-badge status-active">✓ Activo</span>
+                    <p>Dashboard de seguimiento de progreso con gráficos y estadísticas en tiempo real.</p>
+                    <div class="project-footer">
+                        <a href="avance/index.html" class="btn btn-primary">Ver Proyecto</a>
+                        <a href="https://github.com/abermudezissste-source/Proyectos_" class="btn btn-secondary">GitHub</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Proyecto 4: Matrículas -->
+            <div class="project-card">
+                <div class="project-header">
+                    <h2>📝 Matrículas</h2>
+                    <span class="tag">Forms • Database</span>
+                </div>
+                <div class="project-content">
+                    <span class="status-badge status-active">✓ Activo</span>
+                    <p>Sistema de gestión de matrículas con formularios validados y almacenamiento de datos.</p>
+                    <div class="project-footer">
+                        <a href="matriculas/index.html" class="btn btn-primary">Ver Proyecto</a>
+                        <a href="https://github.com/abermudezissste-source/Proyectos_" class="btn btn-secondary">GitHub</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Proyecto 5: Próximo -->
+            <div class="project-card">
+                <div class="project-header">
+                    <h2>⏳ Proyecto 5</h2>
+                    <span class="tag">En Desarrollo</span>
+                </div>
+                <div class="project-content">
+                    <span class="status-badge status-coming">⧖ Próximamente</span>
+                    <p>Este proyecto está en proceso de desarrollo. Estará disponible pronto.</p>
+                    <div class="project-footer">
+                        <button class="btn btn-primary" disabled>Próximamente</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Proyecto 6: Próximo -->
+            <div class="project-card">
+                <div class="project-header">
+                    <h2>⏳ Proyecto 6</h2>
+                    <span class="tag">En Desarrollo</span>
+                </div>
+                <div class="project-content">
+                    <span class="status-badge status-coming">⧖ Próximamente</span>
+                    <p>Este proyecto está en proceso de desarrollo. Estará disponible pronto.</p>
+                    <div class="project-footer">
+                        <button class="btn btn-primary" disabled>Próximamente</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>&copy; 2026 - Mis Proyectos Web | Desarrollado con ❤️ por abermudezissste</p>
+        </footer>
+    </div>
 </body>
 </html>
