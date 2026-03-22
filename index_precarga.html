@@ -150,7 +150,7 @@
   async function cargarBase(){
     // Intenta cargar base.xlsx del mismo directorio
     try{
-      const resp = await fetch('base.xlsx');
+      const resp = await fetch('base_20.xlsx');
       if(!resp.ok) throw new Error('No se pudo leer base.xlsx');
       const buf = await resp.arrayBuffer();
       procesarArrayBuffer(buf);
