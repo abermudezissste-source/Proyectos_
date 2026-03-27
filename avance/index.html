@@ -2,6 +2,76 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <title>Cargar Excel en GitHub Pages</title>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+</head>
+<body>
+
+    <h1>Datos de Base_Avance.xlsx</h1>
+    <div id="contenido-excel">Cargando datos...</div>
+
+    <script>
+        // 1. Ruta del archivo (si está en la misma carpeta)
+        const url = 'Base_Avance.xlsx'; 
+
+        async function cargarExcel() {
+            try {
+                // 2. Descargar el archivo usando fetch
+                const respuesta = await fetch(url);
+                if (!respuesta.ok) throw new Error("No se pudo encontrar el archivo");
+                
+                const arrayBuffer = await respuesta.arrayBuffer();
+
+                // 3. Leer el archivo con SheetJS
+                const libro = XLSX.read(arrayBuffer);
+
+                // 4. Seleccionar la primera hoja
+                const nombreHoja = libro.SheetNames[0];
+                const hoja = libro.Sheets[nombreHoja];
+
+                // 5. Convertir el contenido a JSON (o HTML)
+                const datos = XLSX.utils.sheet_to_json(hoja);
+                
+                mostrarDatos(datos);
+            } catch (error) {
+                console.error("Error al cargar el Excel:", error);
+                document.getElementById('contenido-excel').innerText = "Error al cargar los datos.";
+            }
+        }
+
+        function mostrarDatos(datos) {
+            const contenedor = document.getElementById('contenido-excel');
+            
+            if (datos.length === 0) {
+                contenedor.innerText = "El archivo está vacío.";
+                return;
+            }
+
+            // Crear una tabla básica para mostrar los resultados
+            let html = '<table border="1">';
+            // Encabezados
+            html += '<tr>' + Object.keys(datos[0]).map(key => `<th>${key}</th>`).join('') + '</tr>';
+            // Filas
+            datos.forEach(fila => {
+                html += '<tr>' + Object.values(fila).map(val => `<td>${val}</td>`).join('') + '</tr>';
+            });
+            html += '</table>';
+
+            contenedor.innerHTML = html;
+        }
+
+        // Ejecutar la función al cargar la página
+        cargarExcel();
+    </script>
+</body>
+</html>
+
+
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tablero de Cumplimiento EBDI en BIES.mx</title>
     
