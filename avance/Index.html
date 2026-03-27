@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reporte de Cumplimiento - BIES.mx</title>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; color: #333; }
+        .container { max-width: 1200px; margin: auto; }
+        header { border-bottom: 2px solid #e0e0e0; margin-bottom: 20px; padding-bottom: 10px; }
+        
+        /* Filtros y Controles */
+        .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        .control-group { display: flex; flex-direction: column; }
+        label { font-size: 0.85rem; font-weight: bold; margin-bottom: 5px; color: #666; }
+        select { padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
+
+        /* Tarjetas de Totales */
+        .cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 20px; }
+        .card { background: white; padding: 15px; border-radius: 8px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border-top: 4px solid #2c3e50; }
+        .card h3 { margin: 0; font-size: 0.9rem; color: #7f8c8d; }
+        .card p { margin: 10px 0 0; font-size: 1.5rem; font-weight: bold; color: #2c3e50; }
+
+        /* Gráficas */
+        .charts-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 20px; margin-bottom: 20px; }
+        .chart-container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); min-height: 300px; }
+        
+        /* Tabla */
+        .table-container { background: white; padding: 20px; border-radius: 8px; overflow-x: auto; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+        th { background: #f8f9fa; text-align: left; padding: 12px; border-bottom: 2px solid #dee2e6; }
+        td { padding: 10px; border-bottom: 1px solid #eee; }
+        tr:hover { background-color: #f1f1f1; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Reporte de Cumplimiento de Registro</h1>
+        <p style="font-size: 0.9rem; color: #666;">Archivo precargado: <strong>Base_Avance.xlsx</strong></p>
+    </header>
+
+    <div class="controls">
+        <div class="control-group">
+            <label>Seleccionar Hoja</label>
+            <select id="sheetSelector" onchange="cambiarHoja()"></select>
+        </div>
+        <div class="control-group">
+            <label>CentroId</label>
+            <select id="filterCentroId" onchange="aplicarFiltros()"><option value="Todos">Todos</option></select>
+        </div>
+        <div class="control-group">
+            <label>Oficina de Representación</label>
+            <select id="filterRepresentacion" onchange="actualizarEBDIs(); aplicarFiltros();"><option value="Todos">Todas</option></select>
+        </div>
+        <div class="control-group">
+            <label>Modalidad</label>
+            <select id="filterModalidad" onchange="aplicarFiltros()"><option value="Todos">Todas</option></select>
+        </div>
+        <div class="control-group">
+            <label>EBDI</label>
+            <select id="filterEBDI" onchange="aplicarFiltros()"><option value="Todos">Todas</option></select>
+        </div>
+    </div>
+
+    <div class="cards">
+        <div class="card"><h3>Total Medidos</h3><p id="statMedidos">0</p></div>
+        <div class="card"><h3>Total Pendientes</h3><p id="statPendientes">0</p></div>
+        <div class="card"><h3>% Cumplimiento Global</h3><p id="statGlobal">0%</p></div>
+        <div class="card"><h3>Sedes (EBDI)</h3><p id="statSedes">0</p></div>
+    </div>
+
+    <div class="charts-grid">
+        <div class="chart-container">
+            <canvas id="chartDonut"></canvas>
+        </div>
+        <div class="chart-container">
+            <canvas id="chartBarra"></canvas>
+        </div>
+    </div>
+
+    <div class="table-container">
+        <table id="dataTable">
+            <thead>
+                <tr>
+                    <th>CentroId</th>
+                    <th>Oficina de Representación</th>
+                    <th>Modalidad</th>
+                    <th>EBDI</th>
+                    <th>Medidos</th>
+                    <th>Pendientes</th>
+                    <th>% Cumplimiento</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    let workbook = null;
+    let datosActuales = [];
+    let chartD = null;
+    let chartB = null;
+
+    // 1. Cargar Excel automáticamente
+    window.onload = async () => {
+        try {
+            const response = await fetch('Base_Avance.xlsx');
+            const arrayBuffer = await response.arrayBuffer();
+            workbook = XLSX.read(arrayBuffer);
+            
+            // Llenar selector de hojas
+            const selector = document.getElementById('sheetSelector');
+            workbook.SheetNames.forEach(name => {
+                let opt = document.createElement('option');
+                opt.value = name; opt.innerHTML = name;
+                selector.appendChild(opt);
+            });
+
+            cambiarHoja();
+        } catch (e) {
+            console.error("Error cargando Excel:", e);
+            alert("No se encontró el archivo Base_Avance.xlsx en la carpeta.");
+        }
+    };
+
+    function cambiarHoja() {
+        const sheetName = document.getElementById('sheetSelector').value;
+        const sheet = workbook.Sheets[sheetName];
+        datosActuales = XLSX.utils.sheet_to_json(sheet);
+        
+        inicializarFiltros();
+        aplicarFiltros();
+    }
+
+    function inicializarFiltros() {
+        llenarSelect('filterCentroId', 'CentroId');
+        llenarSelect('filterRepresentacion', 'Oficina de Representación');
+        llenarSelect('filterModalidad', 'Modalidad');
+        actualizarEBDIs();
+    }
+
+    function llenarSelect(id, campo) {
+        const select = document.getElementById(id);
+        const valoresUnicos = [...new Set(datosActuales.map(d => d[campo]))].sort();
+        select.innerHTML = '<option value="Todos">Todos</option>';
+        valoresUnicos.forEach(v => {
+            if(v) select.innerHTML += `<option value="${v}">${v}</option>`;
+        });
+    }
+
+    function actualizarEBDIs() {
+        const rep = document.getElementById('filterRepresentacion').value;
+        const ebdiSelect = document.getElementById('filterEBDI');
+        const filtrados = rep === "Todos" ? datosActuales : datosActuales.filter(d => d['Oficina de Representación'] === rep);
+        
+        const ebdies = [...new Set(filtrados.map(d => d['EBDI']))].sort();
+        ebdiSelect.innerHTML = '<option value="Todos">Todas</option>';
+        ebdies.forEach(e => { if(e) ebdiSelect.innerHTML += `<option value="${e}">${e}</option>`; });
+    }
+
+    function aplicarFiltros() {
+        const fCentro = document.getElementById('filterCentroId').value;
+        const fRep = document.getElementById('filterRepresentacion').value;
+        const fMod = document.getElementById('filterModalidad').value;
+        const fEbdi = document.getElementById('filterEBDI').value;
+
+        const dataFiltrada = datosActuales.filter(d => {
+            return (fCentro === "Todos" || d['CentroId']?.toString() === fCentro) &&
+                   (fRep === "Todos" || d['Oficina de Representación'] === fRep) &&
+                   (fMod === "Todos" || d['Modalidad'] === fMod) &&
+                   (fEbdi === "Todos" || d['EBDI'] === fEbdi);
+        });
+
+        renderizarDashboard(dataFiltrada);
+    }
+
+    function renderizarDashboard(data) {
+        // Totales
+        const medidos = data.reduce((acc, d) => acc + (Number(d['Medidos']) || 0), 0);
+        const pendientes = data.reduce((acc, d) => acc + (Number(d['Pendientes']) || 0), 0);
+        const total = medidos + pendientes;
+        const cumplimiento = total > 0 ? ((medidos / total) * 100).toFixed(1) : 0;
+
+        document.getElementById('statMedidos').innerText = medidos.toLocaleString();
+        document.getElementById('statPendientes').innerText = pendientes.toLocaleString();
+        document.getElementById('statGlobal').innerText = cumplimiento + "%";
+        document.getElementById('statSedes').innerText = data.length;
+
+        // Tabla
+        const tbody = document.getElementById('tableBody');
+        tbody.innerHTML = "";
+        data.forEach(d => {
+            let valorCumplimiento = d['Porcentaje de cumplimento'] || (d['Medidos'] / (d['Medidos'] + d['Pendientes']) * 100).toFixed(1) + "%";
+            tbody.innerHTML += `
+                <tr>
+                    <td>${d['CentroId'] || ''}</td>
+                    <td>${d['Oficina de Representación'] || ''}</td>
+                    <td>${d['Modalidad'] || ''}</td>
+                    <td>${d['EBDI'] || ''}</td>
+                    <td>${d['Medidos'] || 0}</td>
+                    <td>${d['Pendientes'] || 0}</td>
+                    <td><strong>${valorCumplimiento}</strong></td>
+                </tr>`;
+        });
+
+        actualizarGraficas(medidos, pendientes, data);
+    }
+
+    function actualizarGraficas(m, p, data) {
+        if(chartD) chartD.destroy();
+        if(chartB) chartB.destroy();
+
+        // Gráfica de Dona
+        chartD = new Chart(document.getElementById('chartDonut'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Medidos', 'Pendientes'],
+                datasets: [{ data: [m, p], backgroundColor: ['#27ae60', '#e74c3c'] }]
+            },
+            options: { plugins: { title: { display: true, text: 'Cumplimiento Global' } } }
+        });
+
+        // Gráfica de Barras (Top 10 por Representación o EBDI)
+        const etiquetas = data.slice(0, 10).map(d => d['EBDI']?.substring(0, 15));
+        const valores = data.slice(0, 10).map(d => (d['Medidos'] / (d['Medidos'] + d['Pendientes']) * 100));
+
+        chartB = new Chart(document.getElementById('chartBarra'), {
+            type: 'bar',
+            data: {
+                labels: etiquetas,
+                datasets: [{ label: '% Cumplimiento', data: valores, backgroundColor: '#3498db' }]
+            },
+            options: {
+                scales: { y: { beginAtZero: true, max: 100 } },
+                plugins: { title: { display: true, text: 'Cumplimiento por Sede (Top 10)' } }
+            }
+        });
+    }
+</script>
+</body>
+</html>
