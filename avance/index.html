@@ -34,41 +34,6 @@
     </style>
 </head>
 
-<script>
-  const PASSWORD_ADMIN = "Ra03.26Cap*"; // 🔐 CAMBIA LA CONTRASEÑA
-
-  function accesoAdmin() {
-    const pass = prompt("Ingrese contraseña de administrador:");
-
-    if (pass === PASSWORD_ADMIN) {
-      localStorage.setItem("adminActivo", "true");
-      activarAdmin();
-    } else {
-      alert("Contraseña incorrecta");
-    }
-  }
-
-  function activarAdmin() {
-    document.getElementById("bloque-mapeo").style.display = "block";
-    const btn = document.getElementById("btnAdmin");
-    btn.textContent = "Cerrar sesión admin";
-    btn.classList.remove("btn-outline-warning");
-    btn.classList.add("btn-outline-danger");
-    btn.onclick = cerrarAdmin;
-  }
-
-  function cerrarAdmin() {
-    localStorage.removeItem("adminActivo");
-    location.reload();
-  }
-
-  document.addEventListener("DOMContentLoaded", () => {
-    if (localStorage.getItem("adminActivo") === "true") {
-      activarAdmin();
-    }
-  });
-</script>
-
 <body>
 
     <header class="main-header">
