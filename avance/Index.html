@@ -40,7 +40,7 @@
 <div class="container">
     <header>
         <h1>Reporte de Cumplimiento de Registro</h1>
-        <p style="font-size: 0.9rem; color: #666;">Archivo precargado: <strong>Base_Avance.xlsx</strong></p>
+        <p style="font-size: 0.9rem; color: #666;">Archivo precargado: <strong>base_Avance.xlsx</strong></p>
     </header>
 
     <div class="controls">
@@ -109,7 +109,7 @@
     // 1. Cargar Excel automáticamente
     window.onload = async () => {
         try {
-            const response = await fetch('Base_Avance.xlsx');
+            const response = await fetch('base_Avance.xlsx');
             const arrayBuffer = await response.arrayBuffer();
             workbook = XLSX.read(arrayBuffer);
             
@@ -124,7 +124,7 @@
             cambiarHoja();
         } catch (e) {
             console.error("Error cargando Excel:", e);
-            alert("No se encontró el archivo Base_Avance.xlsx en la carpeta.");
+            alert("No se encontró el archivo base_Avance.xlsx en la carpeta.");
         }
     };
 
