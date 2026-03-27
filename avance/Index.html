@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Consulta Base EBDI</title>
+
+https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.19.3/xlsx.full.min.js</script>
+https://cdn.jsdelivr.net/npm/chart.js</script>
+
+<style>
+body { font-family: Arial; margin: 20px; }
+select, input { margin-right: 10px; margin-top: 5px; }
+table { border-collapse: collapse; width: 100%; margin-top: 10px; }
+th, td { border: 1px solid #ccc; padding: 6px; text-align: center; }
+th { background: #f0f0f0; }
+canvas { max-width: 100%; margin-top: 30px; }
+</style>
+</head>
+
+<body>
+
+<h2>Consulta Base EBDI</h2>
+
+<!-- CARGA DEL EXCEL -->
+<input type="file" id="excelInput" accept=".xlsx">
+
+<br><br>
+
+<select id="sheetSelect"></select><br>
+
+<select id="fCentro"></select>
+<select id="fOficina"></select>
+<select id="fModalidad"></select>
+<select id="fEBDI"></select>
+
+<table id="tabla">
+<thead>
+<tr>
+<th>CentroId</th>
+<th>Oficina de Representación</th>
+<th>Modalidad</th>
+<th>EBDI</th>
+<th>Medidos</th>
+<th>Pendientes</th>
+<th>% Cumplimiento</th>
+</tr>
+</thead>
+<tbody></tbody>
+</table>
+
+<canvas id="grafica"></canvas>
+
+<script>
+let workbook, datos = [], chart;
+
+document.getElementById("excelInput").addEventListener("change", e => {
+  const reader = new FileReader();
+  reader.onload = evt => {
+    workbook = XLSX.read(evt.target.result, { type: "binary" });
+
+    sheetSelect.innerHTML = "";
+    workbook.SheetNames.forEach(s => {
+      let o = document.createElement("option");
+      o.value = s;
+      o.textContent = s;
+      sheetSelect.appendChild(o);
+    });
+
+    sheetSelect.onchange = cargarHoja;
+    cargarHoja();
+  };
+  reader.readAsBinaryString(e.target.files[0]);
+});
+
+function cargarHoja() {
+  const hoja = workbook.Sheets[sheetSelect.value];
+  datos = XLSX.utils.sheet_to_json(hoja);
+  llenarFiltros();
+  aplicarFiltros();
+}
+
+function llenarFiltros() {
+  llenar("fCentro","CentroId");
+  llenar("fOficina","Oficina de Representación");
+  llenar("fModalidad","Modalidad");
+
+  // dependencia EBDI
+  const fEBDI = document.getElementById("fEBDI");
+  fEBDI.innerHTML = "<option value=''>Todos</option>";
+
+  datos
+    .filter(d=>!fOficina.value || d["Oficina de Representación"]==fOficina.value)
+    .map(d=>d.EBDI)
+    .filter((v,i,a)=>a.indexOf(v)==i)
+    .forEach(v=>fEBDI.innerHTML+=`<option>${v}</option>`);
+
+  fEBDI.onchange = aplicarFiltros;
+}
+
+function llenar(id,campo){
+  const s=document.getElementById(id);
+  s.innerHTML="<option value=''>Todos</option>";
+  [...new Set(datos.map(d=>d[campo]))].forEach(v=>{
+    if(v) s.innerHTML+=`<option>${v}</option>`;
+  });
+  s.onchange=llenarFiltros;
+}
+
+function aplicarFiltros(){
+  let f=datos.filter(d=>
+    (!fCentro.value || d.CentroId==fCentro.value) &&
+    (!fOficina.value || d["Oficina de Representación"]==fOficina.value) &&
+    (!fModalidad.value || d.Modalidad==fModalidad.value) &&
+    (!fEBDI.value || d.EBDI==fEBDI.value)
+  );
+  tabla(f);
+  grafica(f);
+}
+
+function tabla(arr){
+  const tb=document.querySelector("#tabla tbody");
+  tb.innerHTML="";
+  let m=0,p=0;
+  arr.forEach(d=>{
+    m+=+d.Medidos; p+=+d.Pendientes;
+    tb.innerHTML+=`
+    <tr>
+<td>${d.CentroId}</td>
+<td>${d["Oficina de Representación"]}</td>
+<td>${d.Modalidad}</td>
+<td>${d.EBDI}</td>
+<td>${d.Medidos}</td>
+<td>${d.Pendientes}</td>
+<td>${d["Porcentaje de cumplimento"]}%</td>
+</tr>`;
+  });
+  tb.innerHTML+=`
+<tr style="font-weight:bold">
+<td colspan="4">TOTALES</td>
+<td>${m}</td>
+<td>${p}</td>
+<td>${((m/(m+p))*100||0).toFixed(2)}%</td>
+</tr>`;
+}
+
+function grafica(arr){
+  if(chart) chart.destroy();
+  const ctx = document.getElementById("grafica");
+
+  let g={};
+  arr.forEach(d=>{
+    g[d.EBDI]??={m:0,p:0};
+    g[d.EBDI].m+=+d.Medidos;
+    g[d.EBDI].p+=+d.Pendientes;
+  });
+
+  chart=new Chart(ctx,{
+    type:"bar",
+    data:{
+      labels:Object.keys(g),
+      datasets:[
+        {label:"Medidos",data:Object.values(g).map(x=>x.m),backgroundColor:"green"},
+        {label:"Pendientes",data:Object.values(g).map(x=>x.p),backgroundColor:"red"}
+      ]
+    }
+  });
+}
+</script>
+
+</body>
+</html>
