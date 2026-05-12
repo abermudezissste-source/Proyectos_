@@ -156,8 +156,25 @@ summary:hover {
   height: auto;
 }
 
+/* HEADER */
+.header {
+  background: #611232;
+  color: white;
+  padding: 10px 20px;
+}
 
-/* ===============================
-   BADGES / ESTADOS VISUALES
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
 
+.logo {
+  height: 40px;
+}
+
+.titulo {
+  font-size: 18px;
+  margin: 0;
+}
    
