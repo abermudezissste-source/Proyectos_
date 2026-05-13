@@ -61,6 +61,11 @@ td[data-imc="Bajo peso"] {
   font-weight: 600;
 }
 
+td[data-imc="Posible riesgo de sobrepeso"] {
+  color: #fd7e14;
+  font-weight: 600;
+}
+
 td[data-imc="Sobrepeso"] {
   color: #fd7e14;
   font-weight: 600;
