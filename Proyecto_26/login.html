@@ -11,23 +11,26 @@
 <input type="text" id="usuario" placeholder="Usuario"><br><br>
 <input type="password" id="password" placeholder="Contraseña"><br><br>
 
-<select id="rol">
-  <option value="admin">Administrador</option>
-  <option value="consulta">Consulta</option>
-</select><br><br>
-
 <button onclick="login()">Ingresar</button>
 
 <script>
 function login() {
     const user = document.getElementById("usuario").value;
     const pass = document.getElementById("password").value;
-    const rol = document.getElementById("rol").value;
 
-    // Usuario ficticio
-    if(user === "admin" && pass === "Ra2026L") {
-        localStorage.setItem("usuario", user);
-        localStorage.setItem("rol", rol);
+    // Lista de usuarios con rol implícito
+    const usuarios = [
+        { usuario: "admin", password: "Ra2026L", rol: "admin" },
+        { usuario: "consulta1", password: "12345", rol: "consulta" },
+        { usuario: "consulta2", password: "12345", rol: "consulta" }
+    ];
+
+    // Buscar usuario válido
+    const usuarioValido = usuarios.find(u => u.usuario === user && u.password === pass);
+
+    if (usuarioValido) {
+        localStorage.setItem("usuario", usuarioValido.usuario);
+        localStorage.setItem("rol", usuarioValido.rol);
 
         window.location.href = "index.html";
     } else {
