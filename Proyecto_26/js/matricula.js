@@ -384,7 +384,7 @@ function irAExpediente(matricula, ebdi, estado) {
   document.body.classList.remove("fade-in");
 
   setTimeout(() => {
-    window.location.href = `expediente.html?matricula=${matricula}&ebdi=${ebdi}&estado=${estado}`;
+    window.location.href = `Expediente.html?matricula=${matricula}&ebdi=${ebdi}&estado=${estado}`;
   }, 300);
 }
 
