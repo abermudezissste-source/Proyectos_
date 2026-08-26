@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Login</title>
+</head>
+<body>
+
+<h2>Iniciar sesión</h2>
+
+<input type="text" id="usuario" placeholder="Usuario"><br><br>
+<input type="password" id="password" placeholder="Contraseña"><br><br>
+
+<button onclick="login()">Ingresar</button>
+
+<script>
+function login() {
+    const user = document.getElementById("usuario").value;
+    const pass = document.getElementById("password").value;
+
+    // Lista de usuarios con rol implícito
+    const usuarios = [
+        { usuario: "admin", password: "Ra2026L", rol: "admin" },
+        { usuario: "ursula.ortiz", password: "Helena925", rol: "admin" },
+        { usuario: "abermudez", password: "Ra2026C", rol: "consulta" },
+        { usuario: "consulta1", password: "C12345", rol: "consulta" }
+    ];
+
+    // Buscar usuario válido
+    const usuarioValido = usuarios.find(u => u.usuario === user && u.password === pass);
+
+    if (usuarioValido) {
+        localStorage.setItem("usuario", usuarioValido.usuario);
+        localStorage.setItem("rol", usuarioValido.rol);
+
+        window.location.href = "index.html";
+    } else {
+        alert("Usuario o contraseña incorrectos");
+    }
+}
+</script>
+
+</body>
+</html>

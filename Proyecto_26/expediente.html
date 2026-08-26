@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="css/expediente.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Expediente Electrónico — EBDI</title>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+
+    const rol = localStorage.getItem("rol");
+
+    if (!rol) {
+        alert("Debe iniciar sesión");
+        window.location.href = "login.html";
+        return;
+    }
+
+    if (rol !== "admin") {
+        alert("Acceso restringido. Contacte al administrador.");
+        window.location.href = "matricula.html";
+        return;
+    }
+});
+</script>
+
+</head>
+
+<script src="xlsx.full.min.js"></script>
+<script src="js/expediente.js"></script>
+
+<!-- Loader -->
+<div id="loaderExpediente" class="loader-overlay">
+  <div class="loader-box">
+    <div class="spinner"></div>
+    <p>Cargando expediente...</p>
+  </div>
+</div>
+
+<body>
+  <!-- HEADER -->
+<header class="header">
+  <div class="header-left">
+    <img src="img/Logo.png" alt="Logo" class="logo">
+    <h1 class="titulo">Dashboard Matrículas - EBDI</h1>
+  </div>
+</header>
+<div id="sesion">
+  Usuario: <span id="usuarioLogeado"></span>
+  <button onclick="logout()">Cerrar sesión</button>
+</div>
+<div class="container">
+
+  <!-- ================= ENCABEZADO ================= -->
+  <header class="card">
+    <h1 id="tituloExpediente">Expediente Electrónico</h1>
+    <div class="muted">
+      <strong>Matrícula:</strong> <span id="Matricula">—</span> |
+      <strong>EBDI:</strong> <span id="EBDI">—</span>
+    </div>
+    
+<button type="button" class="secondary" id="btnVolver">
+  ← Volver a Matrículas
+</button>
+
+  </header>
+
+  <!-- ================= FORMULARIO ================= -->
+  <form id="expedienteForm" class="card" onsubmit="return false;">
+
+    <!-- Identidad -->
+    <h2>Datos de identidad</h2>
+    <div class="grid">
+
+      <div class="col-6">
+        <label>Matrícula</label>
+        <input name="matriculaId" readonly>
+      </div>
+      <div class="col-6">
+        <label>Estado</label>
+        <input name="EstadoId" readonly>
+      </div>
+      <div class="col-6">
+        <label>EBDI</label>
+        <input name="ebdiId" readonly>
+      </div>
+      <div class="col-6">
+        <label>Estrato</label>
+       <input name="estrato" readonly>
+       </div>
+      <div class="col-6">
+        <label>CURP</label>
+        <input name="curp" readonly>
+      </div>
+      <div class="col-6">
+        <label>Nombre completo</label>
+        <input name="Nombre completo" readonly>
+      </div>
+      <div class="col-6">
+        <label>Género</label>
+        <input name="genero" readonly>
+      </div>
+      <div class="col-6">
+        <label>Fecha de nacimiento</label>
+        <input type="date" name="fechaNacimiento" readonly>
+      </div>
+       <div class="col-6">
+        <label>Edad</label>
+        <input name="edad" readonly>
+      </div>
+       <div class="col-6">
+        <label>Grupo Sanguíneo y Factor</label>
+        <input name="grupo">
+      </div>
+</div>
+
+    <h2>Persona beneficiaria</h2>
+
+<div class="grid">
+
+  <div class="col-12">
+    <label>Nombre</label>
+    <input name="beneficiarioNombre">
+  </div>
+
+  <div class="col-6">
+    <label>CURP</label>
+    <input name="beneficiarioCurp">
+  </div>
+
+  <div class="col-6">
+    <label>RFC</label>
+    <input name="beneficiarioRfc">
+  </div>
+
+  <div class="col-12">
+    <label>Domicilio</label>
+    <input name="beneficiarioDomicilio">
+  </div>
+
+  <div class="col-4">
+    <label>Teléfono</label>
+    <input name="telefono">
+  </div>
+
+  <div class="col-4">
+    <label>Celular</label>
+    <input name="celular">
+  </div>
+
+  <div class="col-4">
+    <label>Email</label>
+    <input name="email">
+  </div>
+
+</div>
+
+<h2>Padecimientos</h2>
+
+<div class="grid">
+
+  <div class="col-4"><label><input type="checkbox" name="cardiacas"> Enfermedades cardiacas</label></div>
+  <div class="col-4"><label><input type="checkbox" name="renales"> Enfermedades renales</label></div>
+  <div class="col-4"><label><input type="checkbox" name="diabetes"> Diabetes</label></div>
+
+  <div class="col-4"><label><input type="checkbox" name="asma"> Asma</label></div>
+  <div class="col-4"><label><input type="checkbox" name="epilepsia"> Epilepsia</label></div>
+  <div class="col-4"><label><input type="checkbox" name="anemia"> Anemia</label></div>
+
+</div>
+
+<h2>Alergias y tratamientos</h2>
+
+<label>¿Es alérgico?</label>
+<select name="alergiasSiNo">
+  <option value="">Seleccione</option>
+  <option value="Si">Sí</option>
+  <option value="No">No</option>
+</select>
+
+<label>Especifique alergias</label>
+<textarea name="detalleAlergias"></textarea>
+
+<label>¿Está en tratamiento?</label>
+<select name="tratamiento">
+  <option value="">Seleccione</option>
+  <option value="Si">Sí</option>
+  <option value="No">No</option>
+</select>
+
+<label>Detalle del tratamiento</label>
+<textarea name="detalleTratamiento"></textarea>
+
+<h2>Antecedentes</h2>
+
+<label>Antecedentes prenatales</label>
+<textarea name="prenatales"></textarea>
+
+<label>Antecedentes perinatales</label>
+<textarea name="perinatales"></textarea>
+
+<label>Antecedentes familiares</label>
+<textarea name="familiares"></textarea>
+
+<label>Antecedentes personales patológicos</label>
+<textarea name="personales"></textarea>
+
+
+<h2>Antecedentes Prenatales</h2>
+
+<div class="grid">
+  <div class="col-4">
+    <label>No. embarazos</label>
+    <input name="numEmbarazos">
+  </div>
+
+  <div class="col-4">
+    <label>No. abortos</label>
+    <input name="numAbortos">
+  </div>
+
+  <div class="col-4">
+    <label>Edad al embarazo</label>
+    <input name="edadEmbarazo">
+  </div>
+</div>
+
+<label>Complicaciones durante el embarazo</label>
+<textarea name="complicacionesEmbarazo"></textarea>
+
+<label>Alimentación durante el embarazo</label>
+<textarea name="alimentacionEmbarazo"></textarea>
+
+<h2>Antecedentes Perinatales</h2>
+
+<label>Tipo de nacimiento</label>
+<select name="tipoNacimiento">
+  <option value="">Seleccione</option>
+  <option>Parto</option>
+  <option>Cesárea</option>
+</select>
+
+<label>Complicaciones</label>
+<textarea name="complicacionesNacimiento"></textarea>
+
+<div class="grid">
+  <div class="col-4">
+    <label>Peso al nacer</label>
+    <input name="pesoNacimiento">
+  </div>
+
+  <div class="col-4">
+    <label>Talla al nacer</label>
+    <input name="tallaNacimiento">
+  </div>
+</div>
+
+<h2>Antecedentes No Patológicos</h2>
+
+<label>Vive con</label>
+<input name="viveCon">
+
+<label>Servicios básicos</label>
+<select name="servicios">
+  <option>Completo</option>
+  <option>Incompleto</option>
+</select>
+
+<label>Mascotas</label>
+<input name="mascotas">
+
+<label>Observaciones</label>
+<textarea name="observacionesNoPatologicos"></textarea>
+
+<h2>Antecedentes Familiares</h2>
+
+<label>Madre</label>
+<textarea name="madre"></textarea>
+
+<label>Padre</label>
+<textarea name="padre"></textarea>
+
+<label>Hermanos</label>
+<textarea name="hermanos"></textarea>
+
+<h2>Antecedentes Patológicos</h2>
+
+<label>Enfermedades</label>
+<textarea name="enfermedades"></textarea>
+
+<label>Cirugías</label>
+<textarea name="cirugias"></textarea>
+
+<label>Alergias</label>
+<textarea name="alergias"></textarea>
+
+<h2>Alimentación</h2>
+
+<label>Lactancia</label>
+<select name="lactancia">
+  <option>No</option>
+  <option>Sí</option>
+</select>
+
+<label>Dieta actual</label>
+<textarea name="dieta"></textarea>
+
+<label>Observaciones</label>
+<textarea name="alimentacionObs"></textarea>
+
+<h2>Crecimiento y Desarrollo</h2>
+
+<label>Notas generales</label>
+<textarea name="crecimiento"></textarea>
+
+<h2>Exploración Física</h2>
+
+<div class="grid">
+  <div class="col-3">
+    <label>FC</label>
+    <input name="fc">
+  </div>
+
+  <div class="col-3">
+    <label>FR</label>
+    <input name="fr">
+  </div>
+
+  <div class="col-3">
+    <label>Temp</label>
+    <input name="temp">
+  </div>
+</div>
+
+<label>Inspección general</label>
+<textarea name="inspeccion"></textarea>
+
+<label>Cabeza y cuello</label>
+<textarea name="cabeza"></textarea>
+
+<label>Tórax</label>
+<textarea name="torax"></textarea>
+
+<label>Abdomen</label>
+<textarea name="abdomen"></textarea>
+
+<h2>Diagnóstico</h2>
+
+<label>Observaciones</label>
+<textarea name="diagnostico"></textarea>
+
+<label>Apto para ingreso</label>
+<select name="apto">
+  <option>Sí</option>
+  <option>No</option>
+</select>
+
+<h2>Programa de Manejo</h2>
+
+<label><input type="checkbox" name="controlSano"> Control niño sano</label>
+<label><input type="checkbox" name="vacunacion"> Vacunación</label>
+<label><input type="checkbox" name="pesoTalla"> Peso y talla</label>
+
+<label>Detalle</label>
+<textarea name="manejo"></textarea>
+
+<h2>Control de Vacunación</h2>
+
+<label>Observaciones vacunación</label>
+<textarea name="vacunacionObs"></textarea>
+
+<h2>Desparasitación</h2>
+
+<label>Última fecha</label>
+<input type="date" name="desparasitacion">
+
+<label>Observaciones</label>
+<textarea name="desparasitacionObs"></textarea>
+
+
+
+</div>
+
+<label>Observaciones</label>
+<textarea name="observaciones"></textarea>
+
+</div>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <p>Sistema Crecimiento y Desarrollo EBDI © 2026 | Subdirección de Capacitación y Servicios Educativos</p>
+</footer>
+
+</body>
+</html>
